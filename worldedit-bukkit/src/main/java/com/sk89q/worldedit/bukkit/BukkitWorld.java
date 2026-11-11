@@ -118,6 +118,10 @@ public class BukkitWorld extends AbstractWorld {
         List<Entity> ents = world.getEntities();
         List<com.sk89q.worldedit.entity.Entity> entities = new ArrayList<>();
         for (Entity ent : ents) {
+            // On Folia, only read entities this region thread owns.
+            if (!FoliaRegions.mayEdit(ent)) {
+                continue;
+            }
             if (region.contains(BukkitAdapter.asBlockVector(ent.getLocation()))) {
                 entities.add(BukkitAdapter.adapt(ent));
             }
@@ -129,7 +133,9 @@ public class BukkitWorld extends AbstractWorld {
     public List<com.sk89q.worldedit.entity.Entity> getEntities() {
         List<com.sk89q.worldedit.entity.Entity> list = new ArrayList<>();
         for (Entity entity : getWorld().getEntities()) {
-            list.add(BukkitAdapter.adapt(entity));
+            if (FoliaRegions.mayEdit(entity)) {
+                list.add(BukkitAdapter.adapt(entity));
+            }
         }
         return list;
     }
@@ -137,14 +143,16 @@ public class BukkitWorld extends AbstractWorld {
     @Nullable
     @Override
     public com.sk89q.worldedit.entity.Entity createEntity(com.sk89q.worldedit.util.Location location, BaseEntity entity) {
-        if (WorldEditPlugin.getInstance().isFolia()) {
-            throw new RuntimeException(new RegionOperationException(TranslatableComponent.of("worldedit.bukkit.unsupported-on-folia")));
+        org.bukkit.Location target = BukkitAdapter.adapt(getWorld(), location);
+        if (!FoliaRegions.mayEdit(target)) {
+            // Owned by another region thread: skip it, as FoliaExtentListener skips blocks there.
+            return null;
         }
 
         BukkitImplAdapter adapter = WorldEditPlugin.getInstance().getBukkitImplAdapter();
         if (adapter != null) {
             try {
-                Entity createdEntity = adapter.createEntity(BukkitAdapter.adapt(getWorld(), location), entity);
+                Entity createdEntity = adapter.createEntity(target, entity);
                 if (createdEntity != null) {
                     return new BukkitEntity(createdEntity);
                 } else {

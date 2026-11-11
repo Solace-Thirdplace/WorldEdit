@@ -25,9 +25,7 @@ import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.entity.metadata.EntityProperties;
 import com.sk89q.worldedit.extent.Extent;
-import com.sk89q.worldedit.regions.RegionOperationException;
 import com.sk89q.worldedit.util.Location;
-import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.NullWorld;
 
 import java.lang.ref.WeakReference;
@@ -108,12 +106,12 @@ class BukkitEntity implements Entity {
 
     @Override
     public boolean remove() {
-        if (WorldEditPlugin.getInstance().isFolia()) {
-            throw new RuntimeException(new RegionOperationException(TranslatableComponent.of("worldedit.bukkit.unsupported-on-folia")));
-        }
-
         org.bukkit.entity.Entity entity = entityRef.get();
         if (entity != null) {
+            if (!FoliaRegions.mayEdit(entity)) {
+                // Owned by another region thread: leave it, as FoliaExtentListener leaves blocks there.
+                return false;
+            }
             try {
                 entity.remove();
             } catch (UnsupportedOperationException _) {

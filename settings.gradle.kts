@@ -120,17 +120,17 @@ includeBuild("build-logic")
 
 include("worldedit-libs")
 
-listOf("1.21.4", "1.21.5", "1.21.6", "1.21.9", "1.21.11", "26.1", "26.2", "26.3").forEach {
+// Thirdplace: only 26.2, the version our Canvas servers run. Each adapter sets up its own decompiled server.
+listOf("26.2").forEach {
     include("worldedit-bukkit:adapters:adapter-$it")
 }
 
-listOf("bukkit", "core", "core-mc", "fabric", "neoforge", "sponge", "cli").forEach {
+// Thirdplace: only the Bukkit build; the other platforms would fetch their own toolchains to configure.
+listOf("bukkit", "core", "core-mc").forEach {
     include("worldedit-libs:$it")
     include("worldedit-$it")
 }
-include("worldedit-mod")
 include("worldedit-libs:core:ap")
 
 include("worldedit-core:doctools")
 
-include("verification")
