@@ -120,8 +120,8 @@ includeBuild("build-logic")
 
 include("worldedit-libs")
 
-// Thirdplace: only 26.2, the version our Canvas servers run. Each adapter sets up its own decompiled server.
-listOf("26.2").forEach {
+// Thirdplace: only 26.2 and 26.3, the versions our Canvas servers run. Each adapter sets up its own decompiled server.
+listOf("26.2", "26.3").forEach {
     include("worldedit-bukkit:adapters:adapter-$it")
 }
 
